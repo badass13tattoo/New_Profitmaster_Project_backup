@@ -127,7 +127,7 @@ const jobStats = computed(() => {
   border-bottom: 1px solid #dfd0b8;
   position: sticky;
   top: 0;
-  background-color: #222831;
+  background-color: #141316;
   z-index: 10;
 
   /* Делаем header контейнером Flex */
@@ -166,22 +166,24 @@ const jobStats = computed(() => {
   display: flex;
   align-items: center;
   gap: 5px;
-  background-color: rgba(148, 137, 121, 0.1);
+  background-color: #171b22;
   padding: 5px 8px; /* Уменьшен padding для компактности */
   border-radius: 6px;
-  border: 1px solid rgba(223, 208, 184, 0.2);
+  border: 1px solid #dfd0b833;
   cursor: pointer; /* Курсор указателя для кликабельности */
   position: relative;
   transition: all 0.2s ease;
 }
-
+.stat-item.active:hover {
+  background-color: #dfd0b833;
+}
 .stat-item:hover {
-  background-color: rgba(148, 137, 121, 0.2);
-  border-color: rgba(223, 208, 184, 0.4);
+  background-color: #171b22;
+  border-color: #dfd0b833;
 }
 
 .stat-item.active {
-  background-color: rgba(225, 170, 54, 0.2);
+  background-color: #dfd0b833;
   border-color: #e1aa36;
   color: #e1aa36;
 }
@@ -207,7 +209,7 @@ const jobStats = computed(() => {
 }
 
 .zoom-controls button {
-  background-color: #948979;
+  background-color: #222831;
   color: #dfd0b8;
   border: 1px solid #dfd0b8;
   border-radius: 6px;
@@ -217,12 +219,13 @@ const jobStats = computed(() => {
 }
 
 .zoom-controls button:hover {
-  background-color: #a89f8f;
+  background-color: #dfd0b833;
 }
 
 .zoom-controls button.active {
-  background-color: #e1aa36;
-  color: #222831;
+  background-color: #e1aa3633;
+  border-color: #e1aa36;
+  color: #e1aa36;
   font-weight: bold;
 }
 /* ----------------------------------------------------------------- */
@@ -266,13 +269,13 @@ const jobStats = computed(() => {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    /* Для того, чтобы зум встал рядом с названием, 
-         мы объединяем их в один flex-контейнер, 
+    /* Для того, чтобы зум встал рядом с названием,
+         мы объединяем их в один flex-контейнер,
          а job-stats делаем отдельной строкой. */
   }
 
-  /* Переопределение структуры для мобильного: 
-     Мы вернем зум в header-title, чтобы они были в одной строке, 
+  /* Переопределение структуры для мобильного:
+     Мы вернем зум в header-title, чтобы они были в одной строке,
      а job-stats оставим внизу. */
   /* НОВЫЙ ПОДХОД ДЛЯ МОБИЛЬНОГО (БОЛЕЕ ЧИСТЫЙ): */
   /* Вся структура должна быть переопределена как колонка: */

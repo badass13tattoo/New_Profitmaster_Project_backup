@@ -20,7 +20,7 @@ export default {
 }
 
 .home h1 {
-  color: #2c3e50;
+  color: #141316;
   margin-bottom: 10px;
   font-size: 2.5rem;
   font-weight: 700;

@@ -185,8 +185,8 @@ const timeMarks = computed(() => {
   left: 0;
   right: 0;
   height: 30px;
-  background-color: rgba(57, 62, 70, 0.8);
-  border-bottom: 1px solid #dfd0b8;
+  background-color: #222831;
+  border-bottom: 1px 1pxsolid #dfd0b8;
   z-index: 3;
   transform: translateY(30px);
 }
@@ -195,7 +195,7 @@ const timeMarks = computed(() => {
   position: absolute;
   top: 0;
   height: 100%;
-  border-left: 1px solid rgba(223, 208, 184, 0.3);
+  border-left: 1px solid #dfd0b84d;
   display: flex;
   align-items: center;
   padding-left: 5px;
@@ -212,10 +212,10 @@ const timeMarks = computed(() => {
   top: 30px;
   bottom: 0;
   left: 0; /* Прикрепляем к левому краю */
-  width: 2px;
+  width: 4px;
   background-color: #f39f9f;
   z-index: 5;
-  box-shadow: 0 0 4px rgba(243, 159, 159, 0.5);
+  box-shadow: 0 0 4px #f39f9f80;
 }
 
 .character-job-lanes {
@@ -230,10 +230,11 @@ const timeMarks = computed(() => {
   position: relative;
   height: 121px; /* Базовая высота для 10px job-bar */
   margin-bottom: 10px; /* Совпадает с margin-bottom character-card */
+  background-color: #171b22;
   display: flex;
   align-items: flex-start;
   transition: height 0.4s ease, opacity 0.4s ease;
-  border-bottom: 1px solid rgba(223, 208, 184, 0.1);
+  border-bottom: 1px solid #dfd0b833;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -249,7 +250,7 @@ const timeMarks = computed(() => {
   height: 100vh;
   opacity: 1;
   border-left: 3px solid #e1aa36;
-  background-color: rgba(225, 170, 54, 0.05);
+  background-color: #e1aa360d;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -281,22 +282,22 @@ const timeMarks = computed(() => {
 }
 
 .job-lane::-webkit-scrollbar-track {
-  background: rgba(223, 208, 184, 0.1);
+  background: #dfd0b81a;
   border-radius: 3px;
 }
 
 .job-lane::-webkit-scrollbar-thumb {
-  background: rgba(223, 208, 184, 0.3);
+  background: #dfd0b84d;
   border-radius: 3px;
 }
 
 .job-lane::-webkit-scrollbar-thumb:hover {
-  background: rgba(223, 208, 184, 0.5);
+  background: #dfd0b880;
 }
 
 /* Firefox */
 .job-lane {
   scrollbar-width: thin;
-  scrollbar-color: rgba(223, 208, 184, 0.3) rgba(223, 208, 184, 0.1);
+  scrollbar-color: #dfd0b84d #dfd0b81a;
 }
 </style>

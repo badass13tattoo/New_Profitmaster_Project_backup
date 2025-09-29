@@ -20,6 +20,7 @@
         :has-completed-jobs="charactersWithCompletedJobs.has(character.id)"
         :is-focused="focusedCharacterId === character.id"
         @focus-character="setFocusCharacter"
+        @delete-character="deleteCharacter"
       />
     </div>
   </div>
@@ -37,6 +38,7 @@ const {
   isCharacterPanelCollapsed,
   toggleCharacterPanelCollapse,
   focusedCharacterId,
+  deleteCharacter,
 } = useStore();
 
 const isCollapsed = isCharacterPanelCollapsed;
@@ -45,7 +47,7 @@ const toggleCollapse = toggleCharacterPanelCollapse;
 
 <style scoped>
 .character-panel {
-  background-color: #393e46;
+  background-color: #141316;
   padding: 10px;
   height: 100%;
   box-sizing: border-box;
@@ -91,10 +93,10 @@ const toggleCollapse = toggleCharacterPanelCollapse;
 }
 
 .collapse-btn {
-  background-color: #948979;
+  background-color: #222831;
   color: #dfd0b8;
-  border: 1px solid #dfd0b8;
-  border-radius: 50%;
+  border: 1px solid #dfd0b833;
+  border-radius: 8px;
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -105,7 +107,7 @@ const toggleCollapse = toggleCharacterPanelCollapse;
   right: 8px;
   bottom: 0px;
   z-index: 10;
-  font-size: 16px;
+  font-size: 24px;
 }
 
 .character-panel.collapsed .panel-header {
@@ -124,9 +126,9 @@ const toggleCollapse = toggleCharacterPanelCollapse;
 }
 
 .add-char-btn {
-  background-color: #948979;
+  background-color: #222831;
   color: #dfd0b8;
-  border: 1px solid #dfd0b8;
+  border: 1px solid #dfd0b833;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;

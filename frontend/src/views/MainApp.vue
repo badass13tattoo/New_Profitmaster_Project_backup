@@ -26,12 +26,12 @@ export default {
 <style scoped>
 .main-app {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #dfd0b8;
 }
 
 .app-header {
-  background-color: #2c3e50;
-  color: white;
+  background-color: #141316;
+  color: #dfd0b8;
   padding: 2rem;
   text-align: center;
 }
@@ -54,15 +54,15 @@ export default {
 }
 
 .placeholder {
-  background: white;
+  background: #dfd0b8;
   padding: 3rem;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px #0000001a;
   text-align: center;
 }
 
 .placeholder h2 {
-  color: #2c3e50;
+  color: #141316;
   margin-bottom: 1rem;
 }
 

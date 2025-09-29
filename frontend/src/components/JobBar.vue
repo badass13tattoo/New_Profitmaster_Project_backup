@@ -168,7 +168,7 @@ const shouldShowText = computed(() => {
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  color: #ffffff;
+  color: #dfd0b8;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   overflow: hidden;
   height: 100%;
@@ -179,7 +179,7 @@ const shouldShowText = computed(() => {
   font-size: 12px;
   font-weight: bold;
 
-  color: #ffffff;
+  color: #dfd0b8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -190,7 +190,7 @@ const shouldShowText = computed(() => {
 .job-runs {
   font-weight: 600;
 
-  color: #ffffff;
+  color: #dfd0b8;
   white-space: nowrap;
   font-size: 12px;
   flex-shrink: 0;

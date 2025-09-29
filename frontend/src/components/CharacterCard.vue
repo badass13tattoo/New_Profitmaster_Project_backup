@@ -8,6 +8,16 @@
     :title="isCollapsed ? character.name : ''"
     @click="$emit('focus-character', character.id)"
   >
+    <!-- Кнопка удаления персонажа -->
+    <button
+      v-if="!isCollapsed"
+      class="delete-character-btn"
+      @click.stop="$emit('delete-character', character.id)"
+      title="Delet character"
+    >
+      ✕
+    </button>
+
     <div class="card-content">
       <div class="left-section">
         <div class="portrait-container">
@@ -72,7 +82,7 @@ defineProps({
   isFocused: Boolean,
 });
 
-defineEmits(["focus-character"]);
+defineEmits(["focus-character", "delete-character"]);
 </script>
 
 <style scoped>
@@ -83,8 +93,8 @@ defineEmits(["focus-character"]);
   --card-height: 90px; /* Фиксируем высоту для ровных отступов */
 
   display: flex;
-  background-color: #393e46; /* цвет карточек персонажей [cite: 6] */
-  border: 1px solid #dfd0b8; /* цвет текста и бордерлайнов  */
+  background-color: #171b22; /* цвет карточек персонажей [cite: 6] */
+  border: 1px solid #dfd0b833; /* цвет текста и бордерлайнов  */
   border-radius: 8px; /* Скругленные углы  */
   padding: 15px;
   margin-bottom: 10px;
@@ -108,9 +118,9 @@ defineEmits(["focus-character"]);
 }
 
 .character-card.focused {
-  border-color: #e1aa36;
+  border-color: #dfd0b833;
   box-shadow: 0 0 15px rgba(225, 170, 54, 0.4);
-  background-color: rgba(225, 170, 54, 0.08);
+  background-color: #222831;
   transform: scale(1.02);
 }
 
@@ -129,6 +139,38 @@ defineEmits(["focus-character"]);
   background-color: #e1aa36;
   box-shadow: 0 0 8px rgba(225, 170, 54, 0.8);
   animation: flash 1s infinite;
+}
+
+/* Кнопка удаления персонажа */
+.delete-character-btn {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(220, 53, 70, 0);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.delete-character-btn:hover {
+  color: #e1aa36;
+  background-color: #dc354600;
+  transform: scale(1.1);
+}
+
+.delete-character-btn:active {
+  transform: scale(0.95);
+  background-color: #c8233300;
 }
 
 .card-content {
@@ -222,7 +264,7 @@ defineEmits(["focus-character"]);
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: rgba(223, 208, 184, 0.1);
+  background-color: #28252b;
   border-radius: 4px;
   padding: 2px 4px;
   border: 1px solid rgba(223, 208, 184, 0.2);

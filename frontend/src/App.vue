@@ -49,13 +49,13 @@ const topInfoPanelWidth = computed(() => {
 #app-container {
   display: flex;
   flex-direction: column;
+  color: #141316;
   height: 100vh;
 }
 
 .top-info-panel {
-  height: 30px;
-  background-color: rgba(148, 137, 121, 0.1);
-  border-bottom: 1px solid rgba(223, 208, 184, 0.2);
+  height: 60px;
+  background-color: #141316;
   display: flex;
   align-items: center;
   padding: 0 0px;
@@ -83,7 +83,7 @@ const topInfoPanelWidth = computed(() => {
 
 .timeline-header-container {
   flex: 1;
-  background-color: #222831;
+  background-color: #dfd0b833;
 }
 
 .panels-container {
