@@ -120,7 +120,7 @@ const jobStats = computed(() => {
 
 .job-stats {
   display: flex;
-  gap: 20px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 

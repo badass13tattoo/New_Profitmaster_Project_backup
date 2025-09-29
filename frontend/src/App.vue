@@ -2,20 +2,17 @@
   <div id="app-container">
     <div class="headers-container">
       <div class="top-info-panel" :style="{ width: topInfoPanelWidth }">
-        <div class="info-content">
-          <span class="info-text"
-            >Characters: {{ charactersWithJobs.length }}</span
-          >
-          <span class="info-text">Active Jobs: {{ totalActiveJobs }}</span>
-        </div>
+        <div class="info-content"></div>
       </div>
       <div class="timeline-header-container">
         <TimelineHeader />
       </div>
     </div>
     <div class="panels-container">
-      <CharacterPanel />
-      <Timeline />
+      <div class="scroll-container">
+        <CharacterPanel />
+        <Timeline />
+      </div>
     </div>
   </div>
 </template>
@@ -93,5 +90,17 @@ const topInfoPanelWidth = computed(() => {
   display: flex;
   flex: 1;
   overflow: hidden;
+}
+
+.scroll-container {
+  display: flex;
+  flex: 1;
+  overflow-y: auto; /* Добавляем вертикальный скролл */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none; /* WebKit */
 }
 </style>

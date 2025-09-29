@@ -58,7 +58,7 @@ const toggleCollapse = toggleCharacterPanelCollapse;
 }
 
 .character-list {
-  overflow-y: auto;
+  /* Убираем внутренний скролл - теперь скролл общий */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
 }

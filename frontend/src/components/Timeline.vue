@@ -12,7 +12,7 @@
             <span class="time-label">{{ mark.label }}</span>
           </div>
         </div>
-        <div class="now-line" :style="{ left: nowLinePosition + 'px' }"></div>
+        <div class="now-line"></div>
         <div class="character-job-lanes">
           <div
             v-for="charJobs in jobsByCharacter"
@@ -119,29 +119,6 @@ const timeMarks = computed(() => {
 
   return marks;
 });
-
-// Current time line position
-const nowLinePosition = computed(() => {
-  if (!timelineBodyRef.value) return 0;
-
-  const now = new Date();
-  const timelineWidth = timelineBodyRef.value.clientWidth;
-
-  switch (scale.value) {
-    case "day":
-      return (now.getHours() + now.getMinutes() / 60) * pixelsPerHour.value;
-    case "week":
-      const dayOfWeek = now.getDay();
-      const hoursInDayWeek = now.getHours() + now.getMinutes() / 60;
-      return (dayOfWeek * 24 + hoursInDayWeek) * pixelsPerHour.value;
-    case "month":
-      const dayOfMonth = now.getDate();
-      const hoursInDayMonth = now.getHours() + now.getMinutes() / 60;
-      return ((dayOfMonth - 1) * 24 + hoursInDayMonth) * pixelsPerHour.value;
-    default:
-      return 0;
-  }
-});
 </script>
 
 <style scoped>
@@ -158,8 +135,7 @@ const nowLinePosition = computed(() => {
 .timeline-body {
   position: relative;
   flex-grow: 1;
-  overflow-x: auto;
-  overflow-y: auto;
+  /* Убираем внутренний скролл - теперь скролл общий */
 }
 
 .timeline-grid {
@@ -169,7 +145,7 @@ const nowLinePosition = computed(() => {
 }
 
 .time-marks {
-  position: absolute;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -177,6 +153,7 @@ const nowLinePosition = computed(() => {
   background-color: rgba(57, 62, 70, 0.8);
   border-bottom: 1px solid #dfd0b8;
   z-index: 3;
+  transform: translateY(30px);
 }
 
 .time-mark {
@@ -199,6 +176,7 @@ const nowLinePosition = computed(() => {
   position: absolute;
   top: 30px;
   bottom: 0;
+  left: 0; /* Прикрепляем к левому краю */
   width: 2px;
   background-color: #f39f9f;
   z-index: 5;
@@ -209,7 +187,8 @@ const nowLinePosition = computed(() => {
   position: relative;
   padding-top: 10px;
   margin-top: 30px;
-  transform: translateY(20px);
+  min-height: 100%; /* Занимаем всю доступную высоту для синхронизации */
+  /* Убираем transform, чтобы не мешать скроллу */
 }
 
 .job-lane {

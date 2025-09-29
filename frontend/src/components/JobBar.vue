@@ -2,7 +2,10 @@
   <div
     class="job-bar"
     :style="barStyle"
-    :class="[job.type.toLowerCase().replace(' ', '-'), { paused: job.isPaused }]"
+    :class="[
+      job.type.toLowerCase().replace(' ', '-'),
+      { paused: job.isPaused },
+    ]"
     :title="tooltipText"
   >
     <div class="job-bar-content">
@@ -13,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps({
   job: Object,
@@ -37,30 +40,37 @@ const barStyle = computed(() => {
 });
 
 const countdown = computed(() => {
-    const endDate = new Date(props.job.endDate);
-    const diff = endDate - props.now;
+  const endDate = new Date(props.job.endDate);
+  const diff = endDate - props.now;
 
-    if (diff <= 0) {
-        return 'Complete';
-    }
+  if (diff <= 0) {
+    return "Complete";
+  }
 
-    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((diff % (1000 * 60)) / 1000);
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const s = Math.floor((diff % (1000 * 60)) / 1000);
 
-    return `${d}d ${h}h ${m}m ${s}s`;
+  return `${d}d ${h}h ${m}m ${s}s`;
 });
-
 
 const tooltipText = computed(() => {
-  return `Item: ${props.job.name}
-Location: ${props.job.location}
-Time Left: ${countdown.value}
-Type: ${props.job.type}
-  `.trim();
-});
+  const startTime = new Date(props.job.startDate).toLocaleString();
+  const endTime = new Date(props.job.endDate).toLocaleString();
 
+  return `${props.job.name}
+Character: ${props.job.characterName}
+Location: ${props.job.location || "Unknown"}
+Blueprint: ${props.job.blueprint || "N/A"}
+Runs: ${props.job.runs || 1}
+Progress: ${props.job.progress || 0}%
+Start: ${startTime}
+End: ${endTime}
+Time Left: ${countdown.value}
+Type: ${props.job.type.toUpperCase()}
+Status: ${props.job.status.toUpperCase()}`.trim();
+});
 </script>
 
 <style scoped>
@@ -79,17 +89,24 @@ Type: ${props.job.type}
 }
 
 .job-bar-content {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
 }
 
-.manufacturing { background-color: #E1AA36; }
-.reaction { background-color: #7ADAA5; }
-.research { background-color: #239BA7; }
-.planet-extraction { background-color: #ECECBB; }
-
+.industry {
+  background-color: #e1aa36;
+}
+.reaction {
+  background-color: #7adaa5;
+}
+.research {
+  background-color: #239ba7;
+}
+.planetary {
+  background-color: #ececbb;
+}
 
 .job-bar.paused {
   background-image: repeating-linear-gradient(
