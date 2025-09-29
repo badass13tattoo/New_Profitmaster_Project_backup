@@ -1,28 +1,40 @@
 <template>
   <div class="timeline-container" :class="{ 'focus-mode': isFocused }">
-    <div class="timeline-header">
-      <div class="zoom-controls">
-        <button @click="setScale('day')">Day</button>
-        <button @click="setScale('week')">Week</button>
-        <button @click="setScale('month')">Month</button>
-      </div>
-    </div>
     <div class="timeline-body" ref="timelineBodyRef">
-      <div class="now-line"></div>
-      <div class="character-job-lanes">
-        <div
-          v-for="charJobs in jobsByCharacter"
-          :key="charJobs.characterId"
-          class="job-lane"
-          :class="{ 'is-focused': isFocused && charJobs.characterId === focusedCharacterId, 'is-unfocused': isFocused && charJobs.characterId !== focusedCharacterId }"
-        >
-          <JobBar
-            v-for="job in charJobs.jobs"
-            :key="job.id"
-            :job="job"
-            :pixels-per-hour="pixelsPerHour"
-            :now="now"
-          />
+      <div class="timeline-grid">
+        <div class="time-marks">
+          <div
+            v-for="mark in timeMarks"
+            :key="mark.time"
+            class="time-mark"
+            :style="{ left: mark.position + 'px' }"
+          >
+            <span class="time-label">{{ mark.label }}</span>
+          </div>
+        </div>
+        <div class="now-line" :style="{ left: nowLinePosition + 'px' }"></div>
+        <div class="character-job-lanes">
+          <div
+            v-for="charJobs in jobsByCharacter"
+            :key="charJobs.characterId"
+            class="job-lane"
+            :class="{
+              'is-focused':
+                isFocused && charJobs.characterId === focusedCharacterId,
+              'is-unfocused':
+                isFocused && charJobs.characterId !== focusedCharacterId,
+            }"
+          >
+            <div class="job-bars-container">
+              <JobBar
+                v-for="job in charJobs.jobs"
+                :key="job.id"
+                :job="job"
+                :pixels-per-hour="pixelsPerHour"
+                :now="now"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -30,37 +42,106 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import JobBar from './JobBar.vue';
-import { useStore } from '../store';
+import { ref, computed } from "vue";
+import JobBar from "./JobBar.vue";
+import { useStore } from "../store";
 
-const { now, jobsByCharacter, isFocused, focusedCharacterId } = useStore();
+const {
+  now,
+  jobsByCharacter,
+  isFocused,
+  focusedCharacterId,
+  characters,
+  timelineScale,
+} = useStore();
 
-const scale = ref('week'); // day, week, month
 const timelineBodyRef = ref(null);
-
-const setScale = (newScale) => {
-  scale.value = newScale;
-};
+const scale = timelineScale;
 
 // Pixels Per Hour calculation
 const pixelsPerHour = computed(() => {
   if (!timelineBodyRef.value) return 20;
   const timelineWidth = timelineBodyRef.value.clientWidth;
   switch (scale.value) {
-    case 'day':
+    case "day":
       return timelineWidth / 24;
-    case 'week':
+    case "week":
       return timelineWidth / (24 * 7);
-    case 'month':
+    case "month":
       return timelineWidth / (24 * 30);
     default:
       return 20;
   }
 });
 
+// Time marks for the timeline
+const timeMarks = computed(() => {
+  if (!timelineBodyRef.value) return [];
 
+  const timelineWidth = timelineBodyRef.value.clientWidth;
+  const marks = [];
+  const now = new Date();
 
+  switch (scale.value) {
+    case "day":
+      for (let i = 0; i < 24; i += 2) {
+        marks.push({
+          time: i,
+          position: i * pixelsPerHour.value,
+          label: `${i.toString().padStart(2, "0")}:00`,
+        });
+      }
+      break;
+    case "week":
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
+        marks.push({
+          time: i,
+          position: i * pixelsPerHour.value * 24,
+          label: date.toLocaleDateString("en-US", { weekday: "short" }),
+        });
+      }
+      break;
+    case "month":
+      for (let i = 0; i < 30; i += 5) {
+        const date = new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000);
+        marks.push({
+          time: i,
+          position: i * pixelsPerHour.value * 24,
+          label: date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+        });
+      }
+      break;
+  }
+
+  return marks;
+});
+
+// Current time line position
+const nowLinePosition = computed(() => {
+  if (!timelineBodyRef.value) return 0;
+
+  const now = new Date();
+  const timelineWidth = timelineBodyRef.value.clientWidth;
+
+  switch (scale.value) {
+    case "day":
+      return (now.getHours() + now.getMinutes() / 60) * pixelsPerHour.value;
+    case "week":
+      const dayOfWeek = now.getDay();
+      const hoursInDayWeek = now.getHours() + now.getMinutes() / 60;
+      return (dayOfWeek * 24 + hoursInDayWeek) * pixelsPerHour.value;
+    case "month":
+      const dayOfMonth = now.getDate();
+      const hoursInDayMonth = now.getHours() + now.getMinutes() / 60;
+      return ((dayOfMonth - 1) * 24 + hoursInDayMonth) * pixelsPerHour.value;
+    default:
+      return 0;
+  }
+});
 </script>
 
 <style scoped>
@@ -69,69 +150,98 @@ const pixelsPerHour = computed(() => {
   display: flex;
   flex-direction: column;
   background-color: #222831;
-  color: #DFD0B8;
+  color: #dfd0b8;
   height: 100%;
   overflow: hidden;
-}
-
-.timeline-header {
-  padding: 10px;
-  border-bottom: 1px solid #DFD0B8;
-  position: sticky;
-  top: 0;
-  background-color: #222831;
-  z-index: 10;
-}
-
-.zoom-controls button {
-  background-color: #948979;
-  color: #DFD0B8;
-  border: 1px solid #DFD0B8;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  margin-right: 10px;
 }
 
 .timeline-body {
   position: relative;
   flex-grow: 1;
   overflow-x: auto;
+  overflow-y: auto;
+}
+
+.timeline-grid {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.time-marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background-color: rgba(57, 62, 70, 0.8);
+  border-bottom: 1px solid #dfd0b8;
+  z-index: 3;
+}
+
+.time-mark {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-left: 1px solid rgba(223, 208, 184, 0.3);
+  display: flex;
+  align-items: center;
+  padding-left: 5px;
+}
+
+.time-label {
+  font-size: 11px;
+  color: #dfd0b8;
+  opacity: 0.7;
 }
 
 .now-line {
   position: absolute;
-  left: 0;
-  top: 0;
+  top: 30px;
   bottom: 0;
   width: 2px;
-  background-color: #F39F9F;
+  background-color: #f39f9f;
   z-index: 5;
+  box-shadow: 0 0 4px rgba(243, 159, 159, 0.5);
 }
 
 .character-job-lanes {
-    position: relative;
-    padding-top: 20px;
+  position: relative;
+  padding-top: 10px;
+  margin-top: 30px;
+  transform: translateY(20px);
 }
 
 .job-lane {
-    position: relative;
-    height: 50px; /* Height for each character's job lane */
-    margin-bottom: 10px;
-    transition: height 0.4s ease, opacity 0.4s ease;
+  position: relative;
+  height: 121px; /* Высота совпадает с внутренней высотой character-card (без padding) */
+  margin-bottom: 10px; /* Совпадает с margin-bottom character-card */
+  display: flex;
+  align-items: center;
+  transition: height 0.4s ease, opacity 0.4s ease;
+  border-bottom: 1px solid rgba(223, 208, 184, 0.1);
+}
+
+.job-bars-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
 }
 
 .timeline-container.focus-mode .job-lane.is-unfocused {
-    height: 5px;
-    opacity: 0.5;
+  height: 20px;
+  opacity: 0.3;
 }
 
 .timeline-container.focus-mode .job-lane.is-focused {
-    height: 120px; /* Expanded height for focused character */
+  height: 120px; /* Увеличена пропорционально базовой высоте */
 }
 
 /* Hide job bars in unfocused lanes when in focus mode */
-.timeline-container.focus-mode .job-lane.is-unfocused .job-bar {
-    display: none;
+.timeline-container.focus-mode .job-lane.is-unfocused .job-bars-container {
+  display: none;
 }
 </style>

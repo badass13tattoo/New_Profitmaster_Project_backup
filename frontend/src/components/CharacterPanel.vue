@@ -29,13 +29,16 @@ import { ref } from "vue";
 import CharacterCard from "./CharacterCard.vue";
 import { useStore } from "../store";
 
-const { charactersWithJobs, charactersWithCompletedJobs, setFocusCharacter } =
-  useStore();
+const {
+  charactersWithJobs,
+  charactersWithCompletedJobs,
+  setFocusCharacter,
+  isCharacterPanelCollapsed,
+  toggleCharacterPanelCollapse,
+} = useStore();
 
-const isCollapsed = ref(false);
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value;
-};
+const isCollapsed = isCharacterPanelCollapsed;
+const toggleCollapse = toggleCharacterPanelCollapse;
 </script>
 
 <style scoped>
