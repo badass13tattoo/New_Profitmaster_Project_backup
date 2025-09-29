@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Character Name 1",
+    "char_id": 123456789,
+    "refresh_token": "your_refresh_token_here_1"
+  },
+  {
+    "name": "Character Name 2",
+    "char_id": 987654321,
+    "refresh_token": "your_refresh_token_here_2"
+  }
+]
