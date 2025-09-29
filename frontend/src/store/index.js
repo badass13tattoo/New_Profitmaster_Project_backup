@@ -11,6 +11,7 @@ const characters = ref([]);
 const jobs = ref([]);
 
 const focusedCharacterId = ref(null);
+const activeJobFilter = ref(null); // 'industry', 'research', 'reaction', 'planetary', или null
 const isCharacterPanelCollapsed = ref(false);
 const timelineScale = ref("week");
 
@@ -53,6 +54,27 @@ const charactersWithCompletedJobs = computed(() => {
 
 const isFocused = computed(() => focusedCharacterId.value !== null);
 
+// Геттер для фильтрации работ на таймлайне
+const filteredJobsForTimeline = computed(() => {
+  let filteredJobs = jobs.value;
+
+  // Фильтр по персонажу (фокус)
+  if (focusedCharacterId.value !== null) {
+    filteredJobs = filteredJobs.filter(
+      (job) => job.characterId === focusedCharacterId.value
+    );
+  }
+
+  // Фильтр по типу работы
+  if (activeJobFilter.value !== null) {
+    filteredJobs = filteredJobs.filter(
+      (job) => job.type === activeJobFilter.value
+    );
+  }
+
+  return filteredJobs;
+});
+
 // --- Actions ---
 const loadData = async () => {
   characters.value = await fetchCharacters();
@@ -81,6 +103,14 @@ const setTimelineScale = (scale) => {
   timelineScale.value = scale;
 };
 
+const setActiveJobFilter = (jobType) => {
+  if (activeJobFilter.value === jobType) {
+    activeJobFilter.value = null; // Сброс фильтра при повторном клике
+  } else {
+    activeJobFilter.value = jobType;
+  }
+};
+
 // --- Main export ---
 export function useStore() {
   // Load data when the store is first used
@@ -92,11 +122,15 @@ export function useStore() {
     now,
     characters,
     charactersWithJobs,
+    jobs, // Добавляем экспорт jobs
     jobsByCharacter,
     charactersWithCompletedJobs,
     isFocused,
     setFocusCharacter,
     focusedCharacterId,
+    activeJobFilter,
+    setActiveJobFilter,
+    filteredJobsForTimeline,
     isCharacterPanelCollapsed,
     toggleCharacterPanelCollapse,
     timelineScale,

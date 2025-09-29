@@ -95,6 +95,7 @@ const topInfoPanelWidth = computed(() => {
 .scroll-container {
   display: flex;
   flex: 1;
+  height: 100vh;
   overflow-y: auto; /* Добавляем вертикальный скролл */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */

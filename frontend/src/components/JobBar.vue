@@ -8,10 +8,7 @@
     ]"
     :title="tooltipText"
   >
-    <div class="job-bar-content">
-      <span class="job-name">{{ job.name }}</span>
-      <span class="job-countdown">{{ countdown }}</span>
-    </div>
+    <!-- Убираем текст в общем режиме -->
   </div>
 </template>
 
@@ -27,15 +24,32 @@ const props = defineProps({
 const barStyle = computed(() => {
   const start = new Date(props.job.startDate);
   const end = new Date(props.job.endDate);
-  const durationMs = end - start;
+  const now = props.now;
 
-  const offsetMs = start - props.now;
-  const left = (offsetMs / (1000 * 60 * 60)) * props.pixelsPerHour;
-  const width = (durationMs / (1000 * 60 * 60)) * props.pixelsPerHour;
+  // Если работа завершена, скрываем полосу
+  if (end <= now) {
+    return {
+      display: "none",
+    };
+  }
+
+  // Если работа еще не началась, показываем полную полосу
+  if (start > now) {
+    const durationMs = end - start;
+    const width = (durationMs / (1000 * 60 * 60)) * props.pixelsPerHour;
+    return {
+      left: "0px",
+      width: `${width}px`,
+    };
+  }
+
+  // Работа в процессе - показываем оставшееся время
+  const remainingMs = end - now;
+  const width = (remainingMs / (1000 * 60 * 60)) * props.pixelsPerHour;
 
   return {
-    transform: `translateX(${left}px)`,
-    width: `${width}px`,
+    left: "0px",
+    width: `${Math.max(0, width)}px`,
   };
 });
 
@@ -76,23 +90,9 @@ Status: ${props.job.status.toUpperCase()}`.trim();
 <style scoped>
 .job-bar {
   position: absolute;
-  height: 30px;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
   box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  color: #222831;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.job-bar-content {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  align-items: center;
 }
 
 .industry {

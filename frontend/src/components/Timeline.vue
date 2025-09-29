@@ -15,19 +15,17 @@
         <div class="now-line"></div>
         <div class="character-job-lanes">
           <div
-            v-for="charJobs in jobsByCharacter"
-            :key="charJobs.characterId"
+            v-for="character in charactersWithJobs"
+            :key="character.id"
             class="job-lane"
             :class="{
-              'is-focused':
-                isFocused && charJobs.characterId === focusedCharacterId,
-              'is-unfocused':
-                isFocused && charJobs.characterId !== focusedCharacterId,
+              'is-focused': isFocused && character.id === focusedCharacterId,
+              'is-unfocused': isFocused && character.id !== focusedCharacterId,
             }"
           >
             <div class="job-bars-container">
               <JobBar
-                v-for="job in charJobs.jobs"
+                v-for="job in getJobsForCharacter(character.id)"
                 :key="job.id"
                 :job="job"
                 :pixels-per-hour="pixelsPerHour"
@@ -48,15 +46,26 @@ import { useStore } from "../store";
 
 const {
   now,
-  jobsByCharacter,
+  jobs,
   isFocused,
   focusedCharacterId,
   characters,
+  charactersWithJobs,
   timelineScale,
+  activeJobFilter,
+  filteredJobsForTimeline,
 } = useStore();
 
 const timelineBodyRef = ref(null);
 const scale = timelineScale;
+
+// Функция для получения работ конкретного персонажа
+const getJobsForCharacter = (characterId) => {
+  // Используем отфильтрованные работы из store
+  return filteredJobsForTimeline.value.filter(
+    (job) => job.characterId === characterId
+  );
+};
 
 // Pixels Per Hour calculation
 const pixelsPerHour = computed(() => {
@@ -193,12 +202,34 @@ const timeMarks = computed(() => {
 
 .job-lane {
   position: relative;
-  height: 121px; /* Высота совпадает с внутренней высотой character-card (без padding) */
+  height: 121px; /* Базовая высота для 10px job-bar */
   margin-bottom: 10px; /* Совпадает с margin-bottom character-card */
   display: flex;
   align-items: center;
   transition: height 0.4s ease, opacity 0.4s ease;
   border-bottom: 1px solid rgba(223, 208, 184, 0.1);
+}
+
+.job-lane.is-unfocused {
+  height: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.job-lane.is-focused {
+  height: 100vh;
+  opacity: 1;
+  border-left: 3px solid #e1aa36;
+  background-color: rgba(225, 170, 54, 0.05);
+}
+
+.job-lane.is-focused .job-bar {
+  height: 30px;
+}
+
+.job-lane:not(.is-focused) .job-bar {
+  height: 10px;
 }
 
 .job-bars-container {
@@ -208,19 +239,5 @@ const timeMarks = computed(() => {
   top: 0;
   bottom: 0;
   z-index: 1;
-}
-
-.timeline-container.focus-mode .job-lane.is-unfocused {
-  height: 20px;
-  opacity: 0.3;
-}
-
-.timeline-container.focus-mode .job-lane.is-focused {
-  height: 120px; /* Увеличена пропорционально базовой высоте */
-}
-
-/* Hide job bars in unfocused lanes when in focus mode */
-.timeline-container.focus-mode .job-lane.is-unfocused .job-bars-container {
-  display: none;
 }
 </style>

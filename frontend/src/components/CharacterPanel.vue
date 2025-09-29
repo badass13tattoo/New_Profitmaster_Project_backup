@@ -18,6 +18,7 @@
         :character="character"
         :is-collapsed="isCollapsed"
         :has-completed-jobs="charactersWithCompletedJobs.has(character.id)"
+        :is-focused="focusedCharacterId === character.id"
         @click="setFocusCharacter(character.id)"
       />
     </div>
@@ -35,6 +36,7 @@ const {
   setFocusCharacter,
   isCharacterPanelCollapsed,
   toggleCharacterPanelCollapse,
+  focusedCharacterId,
 } = useStore();
 
 const isCollapsed = isCharacterPanelCollapsed;
