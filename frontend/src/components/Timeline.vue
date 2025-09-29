@@ -30,6 +30,9 @@
                 :job="job"
                 :pixels-per-hour="pixelsPerHour"
                 :now="now"
+                :is-focused-mode="
+                  isFocused && character.id === focusedCharacterId
+                "
               />
             </div>
           </div>
