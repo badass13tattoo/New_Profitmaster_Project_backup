@@ -47,7 +47,7 @@ const toggleCollapse = toggleCharacterPanelCollapse;
 .character-panel {
   background-color: #393e46;
   padding: 10px;
-  height: 100%;
+  max-height: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
