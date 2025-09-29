@@ -38,7 +38,6 @@ const barStyle = computed(() => {
     const durationMs = end - start;
     const width = (durationMs / (1000 * 60 * 60)) * props.pixelsPerHour;
     return {
-      left: "0px",
       width: `${width}px`,
     };
   }
@@ -48,7 +47,6 @@ const barStyle = computed(() => {
   const width = (remainingMs / (1000 * 60 * 60)) * props.pixelsPerHour;
 
   return {
-    left: "0px",
     width: `${Math.max(0, width)}px`,
   };
 });
@@ -74,13 +72,10 @@ const tooltipText = computed(() => {
   const endTime = new Date(props.job.endDate).toLocaleString();
 
   return `${props.job.name}
-Character: ${props.job.characterName}
 Location: ${props.job.location || "Unknown"}
 Blueprint: ${props.job.blueprint || "N/A"}
 Runs: ${props.job.runs || 1}
 Progress: ${props.job.progress || 0}%
-Start: ${startTime}
-End: ${endTime}
 Time Left: ${countdown.value}
 Type: ${props.job.type.toUpperCase()}
 Status: ${props.job.status.toUpperCase()}`.trim();
@@ -89,10 +84,11 @@ Status: ${props.job.status.toUpperCase()}`.trim();
 
 <style scoped>
 .job-bar {
-  position: absolute;
+  position: relative;
   border-radius: 4px;
   overflow: hidden;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .industry {

@@ -45,7 +45,9 @@ const jobsByCharacter = computed(() => {
 const charactersWithCompletedJobs = computed(() => {
   const charIds = new Set();
   jobs.value.forEach((job) => {
-    if (new Date(job.endDate) < now.value) {
+    const jobEndDate = new Date(job.endDate);
+    const currentTime = now.value;
+    if (jobEndDate < currentTime) {
       charIds.add(job.characterId);
     }
   });

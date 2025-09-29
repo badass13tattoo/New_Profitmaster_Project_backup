@@ -2,25 +2,57 @@
   <div class="timeline-header">
     <div class="header-bottom-row">
       <div class="job-stats">
-        <span class="stat-item" title="Industry Jobs">
+        <span
+          class="stat-item"
+          :class="{
+            active: activeJobFilter === 'industry',
+            'sort-indicator': activeJobFilter === 'industry',
+          }"
+          title="Industry Jobs - Click to sort by type"
+          @click="setActiveJobFilter('industry')"
+        >
           <span class="stat-icon">🏭</span>
           <span class="stat-value"
             >{{ jobStats.industry.active }}/{{ jobStats.industry.total }}</span
           >
         </span>
-        <span class="stat-item" title="Research Jobs">
+        <span
+          class="stat-item"
+          :class="{
+            active: activeJobFilter === 'research',
+            'sort-indicator': activeJobFilter === 'research',
+          }"
+          title="Research Jobs - Click to sort by type"
+          @click="setActiveJobFilter('research')"
+        >
           <span class="stat-icon">🔬</span>
           <span class="stat-value"
             >{{ jobStats.research.active }}/{{ jobStats.research.total }}</span
           >
         </span>
-        <span class="stat-item" title="Reaction Jobs">
+        <span
+          class="stat-item"
+          :class="{
+            active: activeJobFilter === 'reaction',
+            'sort-indicator': activeJobFilter === 'reaction',
+          }"
+          title="Reaction Jobs - Click to sort by type"
+          @click="setActiveJobFilter('reaction')"
+        >
           <span class="stat-icon">⚗️</span>
           <span class="stat-value"
             >{{ jobStats.reaction.active }}/{{ jobStats.reaction.total }}</span
           >
         </span>
-        <span class="stat-item" title="Planetary Extractors">
+        <span
+          class="stat-item"
+          :class="{
+            active: activeJobFilter === 'planetary',
+            'sort-indicator': activeJobFilter === 'planetary',
+          }"
+          title="Planetary Jobs - Click to sort by type"
+          @click="setActiveJobFilter('planetary')"
+        >
           <span class="stat-icon">🌍</span>
           <span class="stat-value"
             >{{ jobStats.planetary.active }}/{{
@@ -54,7 +86,13 @@
 import { computed } from "vue";
 import { useStore } from "../store";
 
-const { jobsByCharacter, timelineScale, setTimelineScale } = useStore();
+const {
+  jobsByCharacter,
+  timelineScale,
+  setTimelineScale,
+  activeJobFilter,
+  setActiveJobFilter,
+} = useStore();
 
 const scale = timelineScale;
 const setScale = setTimelineScale;
@@ -132,7 +170,23 @@ const jobStats = computed(() => {
   padding: 5px 8px; /* Уменьшен padding для компактности */
   border-radius: 6px;
   border: 1px solid rgba(223, 208, 184, 0.2);
-  cursor: help; /* Курсор помощи для тултипа */
+  cursor: pointer; /* Курсор указателя для кликабельности */
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  background-color: rgba(148, 137, 121, 0.2);
+  border-color: rgba(223, 208, 184, 0.4);
+}
+
+.stat-item.active {
+  background-color: rgba(225, 170, 54, 0.2);
+  border-color: #e1aa36;
+  color: #e1aa36;
+}
+
+.stat-item.sort-indicator {
   position: relative;
 }
 

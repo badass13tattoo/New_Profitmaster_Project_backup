@@ -19,7 +19,7 @@
         :is-collapsed="isCollapsed"
         :has-completed-jobs="charactersWithCompletedJobs.has(character.id)"
         :is-focused="focusedCharacterId === character.id"
-        @click="setFocusCharacter(character.id)"
+        @focus-character="setFocusCharacter"
       />
     </div>
   </div>
@@ -47,7 +47,7 @@ const toggleCollapse = toggleCharacterPanelCollapse;
 .character-panel {
   background-color: #393e46;
   padding: 10px;
-  max-height: 100%;
+  height: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

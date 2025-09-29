@@ -62,9 +62,32 @@ const scale = timelineScale;
 // Функция для получения работ конкретного персонажа
 const getJobsForCharacter = (characterId) => {
   // Используем отфильтрованные работы из store
-  return filteredJobsForTimeline.value.filter(
+  const jobs = filteredJobsForTimeline.value.filter(
     (job) => job.characterId === characterId
   );
+
+  // Сортируем по типу работ, если активен фильтр
+  if (activeJobFilter.value) {
+    return jobs.sort((a, b) => {
+      // Сначала показываем работы выбранного типа
+      if (a.type === activeJobFilter.value && b.type !== activeJobFilter.value)
+        return -1;
+      if (a.type !== activeJobFilter.value && b.type === activeJobFilter.value)
+        return 1;
+
+      // Затем сортируем по оставшемуся времени (сначала те, что заканчиваются раньше)
+      const aRemaining = new Date(a.endDate) - now.value;
+      const bRemaining = new Date(b.endDate) - now.value;
+      return aRemaining - bRemaining;
+    });
+  }
+
+  // Если фильтр не активен, сортируем только по оставшемуся времени
+  return jobs.sort((a, b) => {
+    const aRemaining = new Date(a.endDate) - now.value;
+    const bRemaining = new Date(b.endDate) - now.value;
+    return aRemaining - bRemaining;
+  });
 };
 
 // Pixels Per Hour calculation
@@ -205,9 +228,11 @@ const timeMarks = computed(() => {
   height: 121px; /* Базовая высота для 10px job-bar */
   margin-bottom: 10px; /* Совпадает с margin-bottom character-card */
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   transition: height 0.4s ease, opacity 0.4s ease;
   border-bottom: 1px solid rgba(223, 208, 184, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .job-lane.is-unfocused {
@@ -222,6 +247,8 @@ const timeMarks = computed(() => {
   opacity: 1;
   border-left: 3px solid #e1aa36;
   background-color: rgba(225, 170, 54, 0.05);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .job-lane.is-focused .job-bar {
@@ -233,11 +260,40 @@ const timeMarks = computed(() => {
 }
 
 .job-bars-container {
-  position: absolute;
+  position: relative;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+/* Стили для скроллбара */
+.job-lane::-webkit-scrollbar {
+  width: 6px;
+}
+
+.job-lane::-webkit-scrollbar-track {
+  background: rgba(223, 208, 184, 0.1);
+  border-radius: 3px;
+}
+
+.job-lane::-webkit-scrollbar-thumb {
+  background: rgba(223, 208, 184, 0.3);
+  border-radius: 3px;
+}
+
+.job-lane::-webkit-scrollbar-thumb:hover {
+  background: rgba(223, 208, 184, 0.5);
+}
+
+/* Firefox */
+.job-lane {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(223, 208, 184, 0.3) rgba(223, 208, 184, 0.1);
 }
 </style>

@@ -1,8 +1,12 @@
 <template>
   <div
     class="character-card"
-    :class="{ collapsed: isCollapsed }"
+    :class="{
+      collapsed: isCollapsed,
+      focused: isFocused,
+    }"
     :title="isCollapsed ? character.name : ''"
+    @click="$emit('focus-character', character.id)"
   >
     <div class="card-content">
       <div class="left-section">
@@ -65,7 +69,10 @@ defineProps({
   character: Object,
   isCollapsed: Boolean,
   hasCompletedJobs: Boolean,
+  isFocused: Boolean,
 });
+
+defineEmits(["focus-character"]);
 </script>
 
 <style scoped>
@@ -98,6 +105,30 @@ defineProps({
   padding: 5px;
   justify-content: center;
   align-items: center;
+}
+
+.character-card.focused {
+  border-color: #e1aa36;
+  box-shadow: 0 0 15px rgba(225, 170, 54, 0.4);
+  background-color: rgba(225, 170, 54, 0.08);
+  transform: scale(1.02);
+}
+
+.character-card.focused .portrait {
+  border: 3px solid #e1aa36;
+  box-shadow: 0 0 12px rgba(225, 170, 54, 0.6);
+}
+
+.character-card.focused .indicator-value {
+  color: #e1aa36;
+  font-weight: 900;
+  text-shadow: 0 0 4px rgba(225, 170, 54, 0.5);
+}
+
+.character-card.focused .completed-indicator {
+  background-color: #e1aa36;
+  box-shadow: 0 0 8px rgba(225, 170, 54, 0.8);
+  animation: flash 1s infinite;
 }
 
 .card-content {
