@@ -1,175 +1,157 @@
-from flask import Flask, jsonify
+import base64
 import json
 import os
+import uuid
+from flask import Flask, jsonify, redirect, request, session, url_for
+from flask_session import Session
+import requests
 
 app = Flask(__name__)
 
-# Загружаем локальные данные для тестирования
-def load_local_data():
+# --- Configuration ---
+# Load application settings from the external JSON file
+try:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'Application Settings.json'), 'r') as f:
+        app_settings = json.load(f)
+except FileNotFoundError:
+    print("FATAL: Application Settings.json not found.")
+    exit()
+
+CLIENT_ID = app_settings.get("clientId")
+CLIENT_SECRET = app_settings.get("clientSecret")
+CALLBACK_URL = app_settings.get("callbackUrl")
+SCOPES_STRING = ' '.join(app_settings.get("scopes", []))
+CHARACTERS_FILE = os.path.join(os.path.dirname(__file__), '..', 'characters.json')
+
+# Configure session to use filesystem (server-side)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SECRET_KEY"] = os.urandom(24)  # Use a random secret key
+Session(app)
+
+# --- Helper Functions ---
+def load_characters():
+    """Loads characters from the characters.json file."""
+    if not os.path.exists(CHARACTERS_FILE):
+        return []
     try:
-        data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'local_data.json')
-        with open(data_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return data
-    except FileNotFoundError:
-        print("Предупреждение: Файл local_data.json не найден.")
-        return []
-    except json.JSONDecodeError:
-        print("Ошибка парсинга local_data.json")
+        with open(CHARACTERS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
         return []
 
-# Загружаем локальные данные
-local_characters = load_local_data()
+def save_characters(characters):
+    """Saves the characters list to the characters.json file."""
+    with open(CHARACTERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(characters, f, indent=4)
 
+# --- SSO Routes ---
+@app.route('/sso/login')
+def sso_login():
+    """
+    Redirects the user to the EVE Online SSO authorization page.
+    """
+    state = str(uuid.uuid4())
+    session['sso_state'] = state
+
+    sso_url = (
+        "https://login.eveonline.com/v2/oauth/authorize/?"
+        "response_type=code"
+        f"&redirect_uri={CALLBACK_URL}"
+        f"&client_id={CLIENT_ID}"
+        f"&scope={SCOPES_STRING}"
+        f"&state={state}"
+    )
+    return redirect(sso_url)
+
+@app.route('/callback')
+def sso_callback():
+    """
+    Handles the callback from EVE SSO after user authorization.
+    """
+    code = request.args.get('code')
+    state = request.args.get('state')
+
+    # 1. Validate state to prevent CSRF
+    if 'sso_state' not in session or state != session.pop('sso_state'):
+        return "Error: State mismatch. CSRF attack suspected.", 400
+
+    # 2. Exchange authorization code for tokens
+    try:
+        auth_header_value = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
+        token_response = requests.post(
+            "https://login.eveonline.com/v2/oauth/token",
+            headers={
+                "Authorization": f"Basic {auth_header_value}",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Host": "login.eveonline.com"
+            },
+            data={
+                "grant_type": "authorization_code",
+                "code": code
+            }
+        )
+        token_response.raise_for_status()
+        tokens = token_response.json()
+        access_token = tokens['access_token']
+        refresh_token = tokens['refresh_token']
+
+        # 3. Verify token to get character information
+        verify_response = requests.get(
+            "https://login.eveonline.com/oauth/verify",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        verify_response.raise_for_status()
+        char_data = verify_response.json()
+        character_id = char_data['CharacterID']
+        character_name = char_data['CharacterName']
+
+        # 4. Save character data
+        characters = load_characters()
+        # Check if character already exists and update tokens, otherwise add new
+        char_found = False
+        for char in characters:
+            if char['character_id'] == character_id:
+                char['access_token'] = access_token
+                char['refresh_token'] = refresh_token
+                char_found = True
+                break
+
+        if not char_found:
+            characters.append({
+                "character_id": character_id,
+                "name": character_name,
+                "access_token": access_token,
+                "refresh_token": refresh_token
+            })
+
+        save_characters(characters)
+
+        # 5. Redirect to the frontend application
+        return redirect("https://eve-project-manager.onrender.com/home")
+
+    except requests.RequestException as e:
+        print(f"Error during SSO callback: {e}")
+        return "Error: Could not retrieve tokens or verify character.", 500
+
+# --- API Routes ---
 @app.route('/')
 def hello_world():
     return 'Hello, from the backend!'
 
 @app.route('/characters')
 def get_characters():
-    """Получить список всех персонажей из local_data.json"""
+    """
+    Gets the list of all authenticated characters from characters.json.
+    """
+    characters = load_characters()
+    # Return only public data
+    public_chars = [{"char_id": c["character_id"], "name": c["name"]} for c in characters]
     return jsonify({
-        'mode': 'local',
-        'characters': local_characters,
-        'count': len(local_characters)
-    })
-
-@app.route('/jobs')
-def get_jobs():
-    """Получить список всех работ для персонажей"""
-    import random
-    from datetime import datetime, timedelta
-    
-    jobs = []
-    now = datetime.now()
-    
-    # Список реальных названий работ для EVE Online
-    industry_jobs = [
-        "Tritanium Mining", "Pyerite Extraction", "Mexallon Processing", 
-        "Isogen Refining", "Nocxium Purification", "Zydrine Crystallization",
-        "Megacyte Synthesis", "Morphite Compression", "Crimson Arkonor Mining",
-        "Bistot Extraction", "Arkonor Processing", "Mercoxit Mining"
-    ]
-    
-    research_jobs = [
-        "Blueprint Research", "Material Efficiency Study", "Time Efficiency Analysis",
-        "Invention Process", "Reverse Engineering", "Datacore Analysis",
-        "Skill Training", "Blueprint Copying", "T3 Manufacturing Research",
-        "Capital Ship Research", "Supercapital Research", "Titan Research"
-    ]
-    
-    reaction_jobs = [
-        "Simple Reaction", "Complex Reaction", "Advanced Reaction",
-        "Catalyst Synthesis", "Intermediate Product", "Final Product",
-        "Boosted Reaction", "Efficient Reaction", "Mass Reaction",
-        "Specialized Reaction", "Rare Reaction", "Exotic Reaction"
-    ]
-    
-    planetary_jobs = [
-        "Planetary Command Center", "Extractor Head", "Basic Industry",
-        "Advanced Industry", "High-Tech Industry", "Planetary Launch",
-        "Resource Processing", "Planetary Defense", "Planetary Storage",
-        "Planetary Power", "Planetary Link", "Planetary Customs"
-    ]
-    
-    for char in local_characters:
-        character_id = char['char_id']
-        character_name = char['name']
-        
-        # Industry Jobs
-        for i in range(char['industryJobs']['active']):
-            start_time = now - timedelta(hours=random.randint(1, 24))
-            duration_hours = random.randint(2, 8)
-            end_time = start_time + timedelta(hours=duration_hours)
-            
-            jobs.append({
-                'id': f'industry_{character_id}_{i}',
-                'characterId': character_id,
-                'characterName': character_name,
-                'type': 'industry',
-                'name': random.choice(industry_jobs),
-                'startDate': start_time.isoformat(),
-                'endDate': end_time.isoformat(),
-                'status': 'active' if end_time > now else 'completed',
-                'icon': '🏭',
-                'location': f'Station {random.randint(1000, 9999)}',
-                'blueprint': f'Blueprint {random.randint(100, 999)}',
-                'runs': random.randint(1, 10),
-                'progress': random.randint(0, 100) if end_time > now else 100
-            })
-        
-        # Research Jobs
-        for i in range(char['researchJobs']['active']):
-            start_time = now - timedelta(hours=random.randint(1, 48))
-            duration_hours = random.randint(12, 36)
-            end_time = start_time + timedelta(hours=duration_hours)
-            
-            jobs.append({
-                'id': f'research_{character_id}_{i}',
-                'characterId': character_id,
-                'characterName': character_name,
-                'type': 'research',
-                'name': random.choice(research_jobs),
-                'startDate': start_time.isoformat(),
-                'endDate': end_time.isoformat(),
-                'status': 'active' if end_time > now else 'completed',
-                'icon': '🔬',
-                'location': f'Research Facility {random.randint(100, 999)}',
-                'blueprint': f'Research Blueprint {random.randint(100, 999)}',
-                'runs': random.randint(1, 5),
-                'progress': random.randint(0, 100) if end_time > now else 100
-            })
-        
-        # Reaction Jobs
-        for i in range(char['reactionJobs']['active']):
-            start_time = now - timedelta(hours=random.randint(1, 12))
-            duration_hours = random.randint(1, 4)
-            end_time = start_time + timedelta(hours=duration_hours)
-            
-            jobs.append({
-                'id': f'reaction_{character_id}_{i}',
-                'characterId': character_id,
-                'characterName': character_name,
-                'type': 'reaction',
-                'name': random.choice(reaction_jobs),
-                'startDate': start_time.isoformat(),
-                'endDate': end_time.isoformat(),
-                'status': 'active' if end_time > now else 'completed',
-                'icon': '⚗️',
-                'location': f'Reaction Facility {random.randint(100, 999)}',
-                'blueprint': f'Reaction Formula {random.randint(100, 999)}',
-                'runs': random.randint(1, 20),
-                'progress': random.randint(0, 100) if end_time > now else 100
-            })
-        
-        # Planetary Jobs
-        for i in range(char['planetaryJobs']['active']):
-            start_time = now - timedelta(minutes=random.randint(30, 360))
-            duration_minutes = random.randint(30, 90)
-            end_time = start_time + timedelta(minutes=duration_minutes)
-            
-            jobs.append({
-                'id': f'planetary_{character_id}_{i}',
-                'characterId': character_id,
-                'characterName': character_name,
-                'type': 'planetary',
-                'name': random.choice(planetary_jobs),
-                'startDate': start_time.isoformat(),
-                'endDate': end_time.isoformat(),
-                'status': 'active' if end_time > now else 'completed',
-                'icon': '🌍',
-                'location': f'Planet {random.randint(1, 9)}',
-                'blueprint': f'Planetary Blueprint {random.randint(100, 999)}',
-                'runs': random.randint(1, 50),
-                'progress': random.randint(0, 100) if end_time > now else 100
-            })
-    
-    return jsonify({
-        'mode': 'local',
-        'jobs': jobs,
-        'count': len(jobs)
+        'mode': 'sso',
+        'characters': public_chars,
+        'count': len(public_chars)
     })
 
 if __name__ == '__main__':
-    print(f"Загружено персонажей из local_data.json: {len(local_characters)}")
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
