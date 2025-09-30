@@ -3,10 +3,12 @@ import json
 import os
 import uuid
 from flask import Flask, jsonify, redirect, request, session, url_for
+from flask_cors import CORS
 from flask_session import Session
 import requests
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173", "https://eve-project-manager.onrender.com"])
 
 # --- Configuration ---
 # Load application settings from the external JSON file
